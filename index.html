@@ -2,38 +2,51 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MI Perfume">
     <title>Pesan - MI Perfume</title>
+    
+    <link rel="apple-touch-icon" href="logo.jpg">
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     <style>
         .text-gold { color: #a38d58; }
         .bg-gold { background-color: #a38d58; }
         .bg-gold-light { background-color: #fbf9f2; }
+        .tab-active { border-bottom: 3px solid #a38d58; color: #a38d58; font-weight: bold; }
     </style>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 pb-10">
+<body class="bg-gray-100 text-gray-800 pb-20">
 
-    <header class="bg-white p-4 shadow-sm sticky top-0 z-10 flex flex-col items-center border-b border-gray-200">
-        <img src="logo.jpeg" alt="MI Perfume" class="h-14 w-auto object-contain mb-1">
-        <h1 class="text-sm font-bold text-gray-500">Form Pemesanan Online</h1>
+    <header class="bg-white p-4 shadow-sm sticky top-0 z-20 flex flex-col items-center border-b border-gray-200">
+        <img src="logo.jpg" alt="MI Perfume" class="h-14 w-auto object-contain mb-1">
+        <h1 class="text-sm font-bold text-gray-500">Pemesanan Online</h1>
     </header>
 
-    <div class="p-4 max-w-md mx-auto mt-4">
+    <div class="flex bg-white shadow-sm mb-4 sticky top-[89px] z-10">
+        <button id="tab-pesan" class="flex-1 py-3 text-center tab-active text-sm" onclick="switchTab('pesan')">Pesan Baru</button>
+        <button id="tab-riwayat" class="flex-1 py-3 text-center text-gray-500 text-sm" onclick="switchTab('riwayat')">Riwayat Saya</button>
+    </div>
+
+    <div id="page-pesan" class="p-4 max-w-md mx-auto">
         <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-[#a38d58]">
             <form id="form-pesan" onsubmit="kirimPesanan(event)">
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Nama Anda</label>
-                    <input type="text" id="nama" required class="w-full border p-2 rounded focus:ring-[#a38d58]" placeholder="Masukkan nama">
+                    <input type="text" id="nama" required class="w-full border p-2 rounded focus:ring-[#a38d58] outline-none" placeholder="Masukkan nama">
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Aroma Parfum</label>
-                    <input type="text" id="aroma" required class="w-full border p-2 rounded focus:ring-[#a38d58]" placeholder="Misal: Bvlgari Aqua, Vanilla...">
+                    <input type="text" id="aroma" required class="w-full border p-2 rounded focus:ring-[#a38d58] outline-none" placeholder="Misal: Bvlgari Aqua, Vanilla...">
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Kelas Parfum</label>
-                    <select id="kelas" required onchange="hitungTotal()" class="w-full border p-2 rounded focus:ring-[#a38d58]">
+                    <select id="kelas" required onchange="hitungTotal()" class="w-full border p-2 rounded focus:ring-[#a38d58] outline-none">
                         <option value="" disabled selected>Pilih Kelas...</option>
                         <option value="Standar">Standar (Rp 1.000/ml)</option>
                         <option value="Premium">Premium (Rp 2.000/ml)</option>
@@ -44,15 +57,15 @@
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Ukuran Botol</label>
                     <div class="grid grid-cols-3 gap-2">
-                        <label class="border rounded p-2 text-center cursor-pointer">
+                        <label class="border rounded p-2 text-center cursor-pointer hover:bg-gray-50">
                             <input type="radio" name="ukuran" value="35" required onchange="hitungTotal()" class="hidden peer">
                             <span class="peer-checked:font-bold peer-checked:text-gold">35 ml</span>
                         </label>
-                        <label class="border rounded p-2 text-center cursor-pointer">
+                        <label class="border rounded p-2 text-center cursor-pointer hover:bg-gray-50">
                             <input type="radio" name="ukuran" value="50" onchange="hitungTotal()" class="hidden peer">
                             <span class="peer-checked:font-bold peer-checked:text-gold">50 ml</span>
                         </label>
-                        <label class="border rounded p-2 text-center cursor-pointer">
+                        <label class="border rounded p-2 text-center cursor-pointer hover:bg-gray-50">
                             <input type="radio" name="ukuran" value="100" onchange="hitungTotal()" class="hidden peer">
                             <span class="peer-checked:font-bold peer-checked:text-gold">100 ml</span>
                         </label>
@@ -64,14 +77,37 @@
                     <span id="total-harga" class="text-2xl font-bold text-gold">Rp 0</span>
                 </div>
 
-                <button id="btn-submit" type="submit" class="w-full bg-gold text-white font-bold py-3 rounded shadow hover:opacity-90">
+                <button id="btn-submit" type="submit" class="w-full bg-gold text-white font-bold py-3 rounded shadow hover:opacity-90 active:scale-95 transition">
                     Kirim Pesanan Sekarang
                 </button>
             </form>
         </div>
     </div>
 
+    <div id="page-riwayat" class="p-4 max-w-md mx-auto hidden">
+        <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-[#a38d58]">
+            <h2 class="text-lg font-bold mb-4 border-b pb-2 text-gray-700">Status Pesanan Anda</h2>
+            <div id="daftar-riwayat" class="space-y-4">
+                <p class="text-center text-gray-500 italic mt-4">Memuat data riwayat...</p>
+            </div>
+        </div>
+    </div>
+
+
     <script>
+        // ==========================================
+        // 1. SISTEM ID PENGGUNA (DEVICE ID)
+        // ==========================================
+        // Mengecek apakah HP ini sudah punya ID. Jika belum, buatkan ID acak baru.
+        let buyerId = localStorage.getItem('mi_buyer_id');
+        if (!buyerId) {
+            buyerId = 'buyer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('mi_buyer_id', buyerId);
+        }
+
+        // ==========================================
+        // 2. KONFIGURASI FIREBASE ANDA
+        // ==========================================
         const firebaseConfig = {
   apiKey: "AIzaSyDlrX84TqRgJS902PdjH8awCQacO6hzStY",
   authDomain: "mi-perfume-1989.firebaseapp.com",
@@ -82,10 +118,25 @@
   appId: "1:894897183896:web:71372dc8cbb9056c7144ed",
   measurementId: "G-H2KG1X9KVN"
 };
-
-// Inisialisasi Firebase
+        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        // --- Logika Ganti Tab ---
+        function switchTab(tabId) {
+            document.getElementById('page-pesan').classList.add('hidden');
+            document.getElementById('page-riwayat').classList.add('hidden');
+            document.getElementById('tab-pesan').classList.remove('tab-active', 'text-gray-500');
+            document.getElementById('tab-riwayat').classList.remove('tab-active', 'text-gray-500');
+
+            if(tabId === 'pesan') {
+                document.getElementById('page-pesan').classList.remove('hidden');
+                document.getElementById('tab-pesan').classList.add('tab-active');
+            } else {
+                document.getElementById('page-riwayat').classList.remove('hidden');
+                document.getElementById('tab-riwayat').classList.add('tab-active');
+            }
+        }
 
         const hargaPerMl = { "Standar": 1000, "Premium": 2000, "Super Premium": 3000, "Diamond": 4000 };
 
@@ -100,6 +151,7 @@
             return 0;
         }
 
+        // --- Mengirim Pesanan Baru ---
         function kirimPesanan(event) {
             event.preventDefault();
             const btn = document.getElementById('btn-submit');
@@ -107,23 +159,26 @@
             btn.disabled = true;
 
             const pesananBaru = {
+                buyer_id: buyerId, // <-- Menyematkan Kunci Identitas ke Pesanan
                 nama: document.getElementById('nama').value,
                 aroma: document.getElementById('aroma').value,
                 kelas: document.getElementById('kelas').value,
                 ukuran: document.querySelector('input[name="ukuran"]:checked').value,
                 total: hitungTotal(),
-                status: "Menunggu Diproses", // Status pesanan
-                waktu: firebase.firestore.FieldValue.serverTimestamp() // Waktu dari server Google
+                status: "Menunggu Diproses",
+                waktu: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            // Mengirim data ke koleksi "pesanan" di database
             db.collection("pesanan").add(pesananBaru)
             .then(() => {
-                alert("Pesanan berhasil dikirim! Admin kami akan segera memprosesnya.");
+                alert("Pesanan berhasil dikirim!");
                 document.getElementById('form-pesan').reset();
                 document.getElementById('total-harga').innerText = 'Rp 0';
                 btn.innerText = "Kirim Pesanan Sekarang";
                 btn.disabled = false;
+                
+                // Otomatis pindah ke Tab Riwayat setelah pesan
+                switchTab('riwayat');
             })
             .catch((error) => {
                 alert("Terjadi kesalahan: " + error.message);
@@ -131,6 +186,80 @@
                 btn.disabled = false;
             });
         }
+
+        // --- Memuat Riwayat Pesanan Real-time ---
+        // Hanya mengambil pesanan yang cocok dengan Kunci Identitas (buyerId) HP ini
+        db.collection("pesanan").where("buyer_id", "==", buyerId)
+        .onSnapshot((snapshot) => {
+            const container = document.getElementById('daftar-riwayat');
+            container.innerHTML = '';
+
+            if (snapshot.empty) {
+                container.innerHTML = '<div class="text-center py-6"><p class="text-4xl mb-2">🛍️</p><p class="text-sm text-gray-500 italic">Belum ada riwayat pesanan.</p></div>';
+                return;
+            }
+
+            // Memasukkan data ke array untuk diurutkan dari yang terbaru
+            let riwayatData = [];
+            snapshot.forEach(doc => {
+                riwayatData.push({ id: doc.id, ...doc.data() });
+            });
+            
+            // Urutkan berdasarkan waktu (terbaru di atas)
+            riwayatData.sort((a, b) => {
+                const timeA = a.waktu ? a.waktu.toMillis() : Date.now();
+                const timeB = b.waktu ? b.waktu.toMillis() : Date.now();
+                return timeB - timeA;
+            });
+
+            riwayatData.forEach(data => {
+                // Menentukan warna dan tampilan status
+                let statusColor = "bg-yellow-100 text-yellow-700 border-yellow-200";
+                let statusIcon = "⏳";
+                
+                if (data.status === "Selesai") {
+                    statusColor = "bg-green-100 text-green-700 border-green-200";
+                    statusIcon = "✅";
+                } else if (data.status === "Ditolak") {
+                    statusColor = "bg-red-100 text-red-700 border-red-200";
+                    statusIcon = "❌";
+                }
+
+                // Jika pesanan ditolak, tampilkan alasannya ke pelanggan
+                let alasanTampil = '';
+                if (data.status === "Ditolak" && data.alasan) {
+                    alasanTampil = `<p class="mt-2 text-xs text-red-600 font-medium bg-red-50 p-2 rounded">Alasan: ${data.alasan}</p>`;
+                }
+
+                // Format Tanggal (Jika ada)
+                let tanggalTampil = 'Baru saja';
+                if (data.waktu) {
+                    tanggalTampil = data.waktu.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                }
+
+                const card = document.createElement('div');
+                card.className = "border rounded-lg p-3 mb-3 bg-gray-50";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2 border-b pb-2">
+                        <div>
+                            <p class="font-bold text-gray-800 text-sm">${data.aroma}</p>
+                            <p class="text-xs text-gray-500">${tanggalTampil}</p>
+                        </div>
+                        <span class="text-xs font-bold px-2 py-1 rounded border flex items-center gap-1 ${statusColor}">
+                            ${statusIcon} ${data.status}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-end mt-2">
+                        <div>
+                            <p class="text-xs text-gray-600">${data.kelas} - ${data.ukuran}ml</p>
+                        </div>
+                        <p class="text-sm font-bold text-[#a38d58]">Rp ${data.total.toLocaleString('id-ID')}</p>
+                    </div>
+                    ${alasanTampil}
+                `;
+                container.appendChild(card);
+            });
+        });
     </script>
 </body>
 </html>
