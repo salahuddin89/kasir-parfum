@@ -16,49 +16,116 @@
 </head>
 <body class="bg-gray-100 text-gray-800 pb-20">
 
-    <header class="bg-gray-800 text-white p-4 shadow-sm sticky top-0 z-20 flex justify-between items-center">
-        <h1 class="text-lg font-bold text-[#a38d58]">MI Perfume - Admin</h1>
-        <span class="text-xs bg-green-500 px-2 py-1 rounded-full animate-pulse">Online</span>
-    </header>
-
-    <div class="flex bg-white shadow-sm mb-4 sticky top-[60px] z-10">
-        <button id="tab-pesanan" class="flex-1 py-3 text-center tab-active text-sm" onclick="switchTab('pesanan')">Pesanan Masuk</button>
-        <button id="tab-dashboard" class="flex-1 py-3 text-center text-gray-500 text-sm" onclick="switchTab('dashboard')">Dashboard Analitik</button>
-    </div>
-
-    <div id="page-pesanan" class="p-4 max-w-md mx-auto">
-        <div id="daftar-pesanan" class="space-y-4">
-            <p class="text-center text-gray-500 italic mt-10">Memuat data dari server...</p>
-        </div>
-    </div>
-
-    <div id="page-dashboard" class="p-4 max-w-md mx-auto hidden">
-        
-        <h2 class="text-lg font-bold mb-3">Ringkasan Bulan Ini</h2>
-        <div class="grid grid-cols-2 gap-3 mb-6">
-            <div class="bg-white p-4 rounded-xl shadow border-t-4 border-[#a38d58]">
-                <p class="text-xs text-gray-500 mb-1">Total Omset</p>
-                <p id="dash-omset" class="text-lg font-bold text-gold">Rp 0</p>
+    <div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-100 px-4">
+        <div class="bg-white p-8 rounded-xl shadow-lg max-w-sm w-full border-t-4 border-[#a38d58]">
+            <div class="flex justify-center mb-4">
+                <h1 class="text-2xl font-bold text-[#a38d58]">MI Perfume</h1>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow border-t-4 border-[#a38d58]">
-                <p class="text-xs text-gray-500 mb-1">Botol Terjual</p>
-                <p id="dash-qty" class="text-2xl font-bold text-gray-800">0</p>
-            </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-xl shadow mb-6 border-t-4 border-[#a38d58]">
-            <h2 class="text-sm font-bold mb-2 text-gray-700">Grafik Omset Bulanan</h2>
-            <canvas id="grafikOmset" width="400" height="250"></canvas>
-        </div>
-
-        <div class="bg-white p-4 rounded-xl shadow border-t-4 border-[#a38d58]">
-            <h2 class="text-sm font-bold mb-3 text-gray-700">Top 20 Aroma Terlaris (All Time)</h2>
-            <div id="daftar-aroma" class="space-y-2 max-h-80 overflow-y-auto pr-2">
+            <h2 class="text-center text-gray-600 mb-6 font-medium">Login Admin Area</h2>
+            
+            <form id="form-login" onsubmit="prosesLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1 text-gray-700">Username</label>
+                    <input type="text" id="input-user" required class="w-full border p-3 rounded-lg focus:ring-[#a38d58] outline-none" placeholder="Masukkan username">
                 </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-1 text-gray-700">Password</label>
+                    <input type="password" id="input-pass" required class="w-full border p-3 rounded-lg focus:ring-[#a38d58] outline-none" placeholder="Masukkan password">
+                </div>
+                <button type="submit" class="w-full bg-gold text-white font-bold py-3 rounded-lg shadow hover:opacity-90 transition">
+                    Masuk
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-content" class="hidden">
+        
+        <header class="bg-gray-800 text-white p-4 shadow-sm sticky top-0 z-20 flex justify-between items-center">
+            <h1 class="text-lg font-bold text-[#a38d58]">MI Perfume - Admin</h1>
+            <button onclick="logoutAdmin()" class="text-xs bg-red-500 hover:bg-red-600 px-3 py-1 rounded shadow">Logout</button>
+        </header>
+
+        <div class="flex bg-white shadow-sm mb-4 sticky top-[60px] z-10">
+            <button id="tab-pesanan" class="flex-1 py-3 text-center tab-active text-sm" onclick="switchTab('pesanan')">Pesanan Masuk</button>
+            <button id="tab-dashboard" class="flex-1 py-3 text-center text-gray-500 text-sm" onclick="switchTab('dashboard')">Dashboard Analitik</button>
+        </div>
+
+        <div id="page-pesanan" class="p-4 max-w-md mx-auto">
+            <div id="daftar-pesanan" class="space-y-4">
+                <p class="text-center text-gray-500 italic mt-10">Memuat data dari server...</p>
+            </div>
+        </div>
+
+        <div id="page-dashboard" class="p-4 max-w-md mx-auto hidden">
+            <h2 class="text-lg font-bold mb-3">Ringkasan Bulan Ini</h2>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-white p-4 rounded-xl shadow border-t-4 border-[#a38d58]">
+                    <p class="text-xs text-gray-500 mb-1">Total Omset</p>
+                    <p id="dash-omset" class="text-lg font-bold text-gold">Rp 0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow border-t-4 border-[#a38d58]">
+                    <p class="text-xs text-gray-500 mb-1">Botol Terjual</p>
+                    <p id="dash-qty" class="text-2xl font-bold text-gray-800">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow mb-6 border-t-4 border-[#a38d58]">
+                <h2 class="text-sm font-bold mb-2 text-gray-700">Grafik Omset Bulanan</h2>
+                <canvas id="grafikOmset" width="400" height="250"></canvas>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow border-t-4 border-[#a38d58]">
+                <h2 class="text-sm font-bold mb-3 text-gray-700">Top 20 Aroma Terlaris</h2>
+                <div id="daftar-aroma" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
+            </div>
         </div>
     </div>
 
     <script>
+        // ==========================================
+        // 1. PENGATURAN USERNAME & PASSWORD ADMIN
+        // ==========================================
+        const USERNAME_ADMIN = "admin";
+        const PASSWORD_ADMIN = "miperfume123";
+
+        // Cek apakah admin sudah login sebelumnya di tab ini
+        if (sessionStorage.getItem("admin_logged_in") === "true") {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('admin-content').classList.remove('hidden');
+        }
+
+        // Fungsi Proses Login
+        function prosesLogin(event) {
+            event.preventDefault();
+            const user = document.getElementById('input-user').value;
+            const pass = document.getElementById('input-pass').value;
+
+            if (user === USERNAME_ADMIN && pass === PASSWORD_ADMIN) {
+                // Simpan sesi login
+                sessionStorage.setItem("admin_logged_in", "true");
+                
+                // Sembunyikan form login, tampilkan konten admin
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+            } else {
+                alert("❌ Username atau Password salah!");
+            }
+        }
+
+        // Fungsi Logout
+        function logoutAdmin() {
+            if(confirm("Yakin ingin keluar dari halaman admin?")) {
+                sessionStorage.removeItem("admin_logged_in");
+                document.getElementById('form-login').reset();
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('admin-content').classList.add('hidden');
+            }
+        }
+
+        // ==========================================
+        // 2. KONFIGURASI FIREBASE ANDA
+        // ==========================================
         const firebaseConfig = {
   apiKey: "AIzaSyDlrX84TqRgJS902PdjH8awCQacO6hzStY",
   authDomain: "mi-perfume-1989.firebaseapp.com",
@@ -103,11 +170,10 @@
                 return;
             }
 
-            // Variabel untuk Dashboard
             let totalOmsetBulanIni = 0;
             let totalQtyBulanIni = 0;
-            const rekapBulanan = {}; // Untuk Grafik: { "Jan 2024": 500000, "Feb 2024": 700000 }
-            const rekapAroma = {};   // Untuk Top 20: { "Bvlgari Aqua": 15, "Vanilla": 10 }
+            const rekapBulanan = {}; 
+            const rekapAroma = {};   
 
             const bulanSekarang = new Date().toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
 
@@ -115,7 +181,7 @@
                 const data = doc.data();
                 const id = doc.id; 
 
-                // 1. RENDER KARTU PESANAN (TAB 1)
+                // Render Kartu Pesanan
                 let statusColor = "bg-yellow-100 text-yellow-700";
                 if (data.status === "Selesai") statusColor = "bg-green-100 text-green-700";
                 if (data.status === "Ditolak") statusColor = "bg-red-100 text-red-700";
@@ -150,30 +216,25 @@
                 `;
                 containerPesanan.appendChild(card);
 
-                // 2. PROSES DATA DASHBOARD (Hanya hitung pesanan yang "Selesai")
+                // Proses Data Dashboard
                 if (data.status === "Selesai") {
-                    // Cek waktu (fallback ke waktu lokal jika server lambat merespon)
                     const waktuTanggal = data.waktu ? data.waktu.toDate() : new Date();
                     const bulanTransaksi = waktuTanggal.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
 
-                    // Hitung Bulan Ini
                     if (bulanTransaksi === bulanSekarang) {
                         totalOmsetBulanIni += data.total;
                         totalQtyBulanIni += 1;
                     }
 
-                    // Rekap Grafik Bulanan
                     if (!rekapBulanan[bulanTransaksi]) rekapBulanan[bulanTransaksi] = 0;
                     rekapBulanan[bulanTransaksi] += data.total;
 
-                    // Rekap Aroma (Ubah ke huruf kapital semua agar seragam, misal: "vanilla" = "VANILLA")
                     const namaAroma = data.aroma.trim().toUpperCase();
                     if (!rekapAroma[namaAroma]) rekapAroma[namaAroma] = 0;
-                    rekapAroma[namaAroma] += 1; // Dihitung berdasarkan jumlah botol (pesanan)
+                    rekapAroma[namaAroma] += 1; 
                 }
             });
 
-            // 3. RENDER DASHBOARD (TAB 2)
             document.getElementById('dash-omset').innerText = 'Rp ' + totalOmsetBulanIni.toLocaleString('id-ID');
             document.getElementById('dash-qty').innerText = totalQtyBulanIni;
 
@@ -181,17 +242,13 @@
             renderTopAroma(rekapAroma);
         });
 
-        // --- Fungsi Grafik Menggunakan Chart.js ---
+        // --- Fungsi Grafik & Top Aroma ---
         function renderGrafik(dataBulanan) {
             const ctx = document.getElementById('grafikOmset').getContext('2d');
-            
-            // Membalik urutan agar bulan terlama di kiri, terbaru di kanan
             const labelBulan = Object.keys(dataBulanan).reverse();
             const dataOmset = Object.values(dataBulanan).reverse();
 
-            if (chartInstance) {
-                chartInstance.destroy(); // Hapus grafik lama sebelum update
-            }
+            if (chartInstance) chartInstance.destroy(); 
 
             chartInstance = new Chart(ctx, {
                 type: 'bar',
@@ -208,15 +265,13 @@
             });
         }
 
-        // --- Fungsi Render Top 20 Aroma ---
         function renderTopAroma(dataAroma) {
             const containerAroma = document.getElementById('daftar-aroma');
             containerAroma.innerHTML = '';
 
-            // Mengubah Object menjadi Array lalu diurutkan dari yang terbanyak
             const aromaSorted = Object.entries(dataAroma)
-                .sort((a, b) => b[1] - a[1]) // Urutkan Descending
-                .slice(0, 20);               // Ambil hanya 20 teratas
+                .sort((a, b) => b[1] - a[1]) 
+                .slice(0, 20);               
 
             if (aromaSorted.length === 0) {
                 containerAroma.innerHTML = '<p class="text-sm text-gray-500 italic">Belum ada data penjualan selesai.</p>';
@@ -226,8 +281,6 @@
             aromaSorted.forEach((item, index) => {
                 const nama = item[0];
                 const jumlah = item[1];
-                
-                // Beri medali untuk top 3
                 let peringkat = `<span class="font-bold text-gray-500">${index + 1}.</span>`;
                 if (index === 0) peringkat = '🥇';
                 if (index === 1) peringkat = '🥈';
