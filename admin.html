@@ -174,7 +174,6 @@
         
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-
         let chartInstance = null;
 
         db.collection("pesanan").orderBy("waktu", "desc").onSnapshot((snapshot) => {
@@ -196,6 +195,7 @@
                 const data = doc.data();
                 const id = doc.id; 
 
+                // Tampilan Status & Tombol
                 let statusColor = "bg-yellow-100 text-yellow-700";
                 if (data.status === "Selesai") statusColor = "bg-green-100 text-green-700";
                 if (data.status === "Ditolak") statusColor = "bg-red-100 text-red-700";
@@ -210,52 +210,86 @@
                     `;
                 }
 
-                let alasanPenolakan = '';
-                if (data.status === "Ditolak" && data.alasan) {
-                    alasanPenolakan = `<div class="mt-3 bg-red-50 p-2 rounded border border-red-100"><p class="text-xs text-red-600 font-bold">Alasan Ditolak:</p><p class="text-sm text-red-700 italic">${data.alasan}</p></div>`;
+                let alasanPenolakan = data.status === "Ditolak" && data.alasan ? `<div class="mt-3 bg-red-50 p-2 rounded border border-red-100"><p class="text-xs text-red-600 font-bold">Alasan Ditolak:</p><p class="text-sm text-red-700 italic">${data.alasan}</p></div>` : '';
+
+                // --- MEMBACA FORMAT LAMA VS FORMAT BARU (KERANJANG) ---
+                let detailPesananHTML = '';
+                if (data.items) {
+                    // Jika Format Baru (Array Keranjang)
+                    detailPesananHTML = data.items.map(item => `
+                        <div class="flex justify-between items-center text-sm border-b border-gray-100 pb-1 mb-1">
+                            <span><span class="font-bold text-gray-800">${item.qty}x</span> ${item.aroma}</span>
+                            <span class="text-xs text-gray-500">${item.kelas} ${item.ukuran}ml</span>
+                        </div>
+                    `).join('');
+                } else {
+                    // Jika Format Lama (Pesanan Single)
+                    detailPesananHTML = `
+                        <div class="flex justify-between items-center text-sm border-b border-gray-100 pb-1 mb-1">
+                            <span><span class="font-bold text-gray-800">1x</span> ${data.aroma}</span>
+                            <span class="text-xs text-gray-500">${data.kelas} ${data.ukuran}ml</span>
+                        </div>
+                    `;
                 }
 
+                // Render Kartu Admin
                 const card = document.createElement('div');
                 card.className = "bg-white p-4 rounded-xl shadow border-l-4 border-[#a38d58]";
                 card.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-bold text-lg">${data.nama}</h3>
+                    <div class="flex justify-between items-start mb-3 border-b pb-2">
+                        <h3 class="font-bold text-lg text-gray-800">${data.nama}</h3>
                         <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${data.status}</span>
                     </div>
-                    <p class="text-sm text-gray-600"><span class="font-bold">Aroma:</span> ${data.aroma}</p>
-                    <p class="text-sm text-gray-600"><span class="font-bold">Detail:</span> ${data.kelas} - ${data.ukuran}ml</p>
-                    <p class="text-lg font-bold text-[#a38d58] mt-2">Rp ${data.total.toLocaleString('id-ID')}</p>
+                    <div class="bg-gray-50 p-2 rounded mb-3 space-y-1">
+                        <p class="text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">Rincian Pesanan:</p>
+                        ${detailPesananHTML}
+                    </div>
+                    <div class="flex justify-between items-end mt-2">
+                        <span class="text-sm text-gray-500 font-medium">Total Tagihan:</span>
+                        <span class="text-lg font-bold text-[#a38d58]">Rp ${data.total.toLocaleString('id-ID')}</span>
+                    </div>
                     ${alasanPenolakan}
                     ${actionButtons}
                 `;
                 containerPesanan.appendChild(card);
 
+                // --- KALKULASI DASHBOARD MULTI-ITEM ---
                 if (data.status === "Selesai") {
                     const waktuTanggal = data.waktu ? data.waktu.toDate() : new Date();
                     const bulanTransaksi = waktuTanggal.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
 
                     if (bulanTransaksi === bulanSekarang) {
                         totalOmsetBulanIni += data.total;
-                        totalQtyBulanIni += 1;
                     }
-
                     if (!rekapBulanan[bulanTransaksi]) rekapBulanan[bulanTransaksi] = 0;
                     rekapBulanan[bulanTransaksi] += data.total;
 
-                    const namaAroma = data.aroma.trim().toUpperCase();
-                    if (!rekapAroma[namaAroma]) rekapAroma[namaAroma] = 0;
-                    rekapAroma[namaAroma] += 1; 
+                    // Mengurai Item untuk Chart Qty dan Top Aroma
+                    if (data.items) {
+                        data.items.forEach(item => {
+                            if (bulanTransaksi === bulanSekarang) totalQtyBulanIni += item.qty;
+                            const namaAroma = item.aroma.trim().toUpperCase();
+                            if (!rekapAroma[namaAroma]) rekapAroma[namaAroma] = 0;
+                            rekapAroma[namaAroma] += item.qty;
+                        });
+                    } else {
+                        // Dukungan Dashboard untuk Data Lama
+                        if (bulanTransaksi === bulanSekarang) totalQtyBulanIni += 1;
+                        const namaAroma = data.aroma.trim().toUpperCase();
+                        if (!rekapAroma[namaAroma]) rekapAroma[namaAroma] = 0;
+                        rekapAroma[namaAroma] += 1;
+                    }
                 }
             });
 
             document.getElementById('dash-omset').innerText = 'Rp ' + totalOmsetBulanIni.toLocaleString('id-ID');
             document.getElementById('dash-qty').innerText = totalQtyBulanIni;
-
             renderGrafik(rekapBulanan);
             renderTopAroma(rekapAroma);
             renderBottomAroma(rekapAroma);
         });
 
+        // (Fungsi renderGrafik, renderTopAroma, renderBottomAroma, selesaikanPesanan, tolakPesanan tetap sama seperti sebelumnya)
         function renderGrafik(dataBulanan) {
             const ctx = document.getElementById('grafikOmset').getContext('2d');
             const labelBulan = Object.keys(dataBulanan).reverse();
