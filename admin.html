@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin - MI Perfume</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -30,16 +30,18 @@
                 </div>
                 
                 <div class="mb-6">
-    <label class="block text-sm font-medium mb-1 text-gray-700">Password</label>
-    <div class="relative flex items-center">
-        <input type="password" id="input-pass" required class="w-full border p-3 rounded-lg focus:ring-[#a38d58] outline-none pr-14" placeholder="Masukkan password">
-        <button type="button" onclick="togglePassword()" class="absolute right-0 h-full px-4 flex items-center justify-center text-xl text-gray-500 hover:text-gray-700 focus:outline-none z-10 cursor-pointer select-none">
-            <span id="eye-icon">👁️</span>
-        </button>
-    </div>
-</div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700">Password</label>
+                    <div class="relative w-full">
+                        <input type="password" id="input-pass" required class="w-full border p-3 rounded-lg focus:ring-[#a38d58] outline-none pr-14" placeholder="Masukkan password">
+                        <div class="absolute inset-y-0 right-0 flex items-center">
+                            <button type="button" onclick="togglePassword()" class="p-3 text-xl focus:outline-none cursor-pointer">
+                                <span id="eye-icon">👁️</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                <button type="submit" class="w-full bg-gold text-white font-bold py-3 rounded-lg shadow hover:opacity-90 transition">
+                <button type="submit" class="w-full bg-gold text-white font-bold py-3 rounded-lg shadow hover:opacity-90 transition active:scale-95">
                     Masuk
                 </button>
             </form>
@@ -89,29 +91,25 @@
 
             <div class="bg-white p-4 rounded-xl shadow mb-6 border-t-4 border-red-400">
                 <h2 class="text-sm font-bold mb-3 text-red-600">20 Aroma Kurang Laris 🔻</h2>
-                <p class="text-xs text-gray-500 mb-3 border-b pb-2">Aroma dengan penjualan paling sedikit (Underperforming).</p>
                 <div id="daftar-aroma-bawah" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
             </div>
         </div>
     </div>
 
+
     <script>
-        // ==========================================
-        // 1. PENGATURAN USERNAME & PASSWORD ADMIN
-        // ==========================================
         const USERNAME_ADMIN = "admin";
         const PASSWORD_ADMIN = "miperfume123";
 
-        // Fitur Tampilkan/Sembunyikan Password
         function togglePassword() {
             const passInput = document.getElementById('input-pass');
             const eyeIcon = document.getElementById('eye-icon');
             if (passInput.type === 'password') {
                 passInput.type = 'text';
-                eyeIcon.innerText = '🙈'; // Ubah ikon saat password terlihat
+                eyeIcon.innerText = '🙈';
             } else {
                 passInput.type = 'password';
-                eyeIcon.innerText = '👁️'; // Ubah ikon kembali
+                eyeIcon.innerText = '👁️';
             }
         }
 
@@ -121,10 +119,7 @@
         }
 
         function prosesLogin(event) {
-            event.preventDefault();
-            
-            // Perbaikan: .toLowerCase() agar tidak sensitif huruf besar/kecil (Admin vs admin)
-            // Perbaikan: .trim() untuk membuang spasi yang tidak sengaja terketik di awal/akhir
+            event.preventDefault(); // Mencegah halaman refresh
             const user = document.getElementById('input-user').value.toLowerCase().trim();
             const pass = document.getElementById('input-pass').value.trim();
 
@@ -133,7 +128,7 @@
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
             } else {
-                alert("❌ Username atau Password salah! Cek kembali ketikan Anda.");
+                alert("❌ Username atau Password salah!");
             }
         }
 
@@ -141,18 +136,31 @@
             if(confirm("Yakin ingin keluar dari halaman admin?")) {
                 sessionStorage.removeItem("admin_logged_in");
                 document.getElementById('form-login').reset();
-                // Kembalikan tipe input ke password jika tadi sempat di-show
                 document.getElementById('input-pass').type = 'password';
                 document.getElementById('eye-icon').innerText = '👁️';
-
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('admin-content').classList.add('hidden');
             }
         }
 
-        // ==========================================
-        // 2. KONFIGURASI FIREBASE ANDA
-        // ==========================================
+        function switchTab(tabId) {
+            document.getElementById('page-pesanan').classList.add('hidden');
+            document.getElementById('page-dashboard').classList.add('hidden');
+            document.getElementById('tab-pesanan').classList.remove('tab-active', 'text-gray-500');
+            document.getElementById('tab-dashboard').classList.remove('tab-active', 'text-gray-500');
+
+            if(tabId === 'pesanan') {
+                document.getElementById('page-pesanan').classList.remove('hidden');
+                document.getElementById('tab-pesanan').classList.add('tab-active');
+            } else {
+                document.getElementById('page-dashboard').classList.remove('hidden');
+                document.getElementById('tab-dashboard').classList.add('tab-active');
+            }
+        }
+    </script>
+
+
+    <script>
         const firebaseConfig = {
   apiKey: "AIzaSyDlrX84TqRgJS902PdjH8awCQacO6hzStY",
   authDomain: "mi-perfume-1989.firebaseapp.com",
@@ -169,25 +177,6 @@
 
         let chartInstance = null;
 
-        // --- Logika Ganti Tab ---
-        function switchTab(tabId) {
-            document.getElementById('page-pesanan').classList.add('hidden');
-            document.getElementById('page-dashboard').classList.add('hidden');
-            document.getElementById('tab-pesanan').classList.remove('tab-active', 'text-gray-500');
-            document.getElementById('tab-dashboard').classList.remove('tab-active', 'text-gray-500');
-
-            if(tabId === 'pesanan') {
-                document.getElementById('page-pesanan').classList.remove('hidden');
-                document.getElementById('tab-pesanan').classList.add('tab-active');
-                document.getElementById('tab-dashboard').classList.add('text-gray-500');
-            } else {
-                document.getElementById('page-dashboard').classList.remove('hidden');
-                document.getElementById('tab-dashboard').classList.add('tab-active');
-                document.getElementById('tab-pesanan').classList.add('text-gray-500');
-            }
-        }
-
-        // --- Mengambil Data Real-time & Memproses Dashboard ---
         db.collection("pesanan").orderBy("waktu", "desc").onSnapshot((snapshot) => {
             const containerPesanan = document.getElementById('daftar-pesanan');
             containerPesanan.innerHTML = ''; 
@@ -201,14 +190,12 @@
             let totalQtyBulanIni = 0;
             const rekapBulanan = {}; 
             const rekapAroma = {};   
-
             const bulanSekarang = new Date().toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
 
             snapshot.forEach((doc) => {
                 const data = doc.data();
                 const id = doc.id; 
 
-                // Render Kartu Pesanan
                 let statusColor = "bg-yellow-100 text-yellow-700";
                 if (data.status === "Selesai") statusColor = "bg-green-100 text-green-700";
                 if (data.status === "Ditolak") statusColor = "bg-red-100 text-red-700";
@@ -217,8 +204,8 @@
                 if (data.status !== "Selesai" && data.status !== "Ditolak") {
                     actionButtons = `
                         <div class="flex gap-2 mt-4 border-t pt-3">
-                            <button onclick="selesaikanPesanan('${id}')" class="flex-1 bg-gray-800 text-white text-sm py-2 rounded shadow hover:bg-gray-700 transition">Selesaikan</button>
-                            <button onclick="tolakPesanan('${id}')" class="flex-1 bg-red-100 text-red-700 font-bold text-sm py-2 rounded shadow border border-red-200 hover:bg-red-200 transition">Tolak</button>
+                            <button onclick="selesaikanPesanan('${id}')" class="flex-1 bg-gray-800 text-white text-sm py-2 rounded shadow hover:bg-gray-700">Selesaikan</button>
+                            <button onclick="tolakPesanan('${id}')" class="flex-1 bg-red-100 text-red-700 font-bold text-sm py-2 rounded shadow border border-red-200">Tolak</button>
                         </div>
                     `;
                 }
@@ -229,3 +216,98 @@
                 }
 
                 const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl shadow border-l-4 border-[#a38d58]";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-lg">${data.nama}</h3>
+                        <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${data.status}</span>
+                    </div>
+                    <p class="text-sm text-gray-600"><span class="font-bold">Aroma:</span> ${data.aroma}</p>
+                    <p class="text-sm text-gray-600"><span class="font-bold">Detail:</span> ${data.kelas} - ${data.ukuran}ml</p>
+                    <p class="text-lg font-bold text-[#a38d58] mt-2">Rp ${data.total.toLocaleString('id-ID')}</p>
+                    ${alasanPenolakan}
+                    ${actionButtons}
+                `;
+                containerPesanan.appendChild(card);
+
+                if (data.status === "Selesai") {
+                    const waktuTanggal = data.waktu ? data.waktu.toDate() : new Date();
+                    const bulanTransaksi = waktuTanggal.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+
+                    if (bulanTransaksi === bulanSekarang) {
+                        totalOmsetBulanIni += data.total;
+                        totalQtyBulanIni += 1;
+                    }
+
+                    if (!rekapBulanan[bulanTransaksi]) rekapBulanan[bulanTransaksi] = 0;
+                    rekapBulanan[bulanTransaksi] += data.total;
+
+                    const namaAroma = data.aroma.trim().toUpperCase();
+                    if (!rekapAroma[namaAroma]) rekapAroma[namaAroma] = 0;
+                    rekapAroma[namaAroma] += 1; 
+                }
+            });
+
+            document.getElementById('dash-omset').innerText = 'Rp ' + totalOmsetBulanIni.toLocaleString('id-ID');
+            document.getElementById('dash-qty').innerText = totalQtyBulanIni;
+
+            renderGrafik(rekapBulanan);
+            renderTopAroma(rekapAroma);
+            renderBottomAroma(rekapAroma);
+        });
+
+        function renderGrafik(dataBulanan) {
+            const ctx = document.getElementById('grafikOmset').getContext('2d');
+            const labelBulan = Object.keys(dataBulanan).reverse();
+            const dataOmset = Object.values(dataBulanan).reverse();
+            if (chartInstance) chartInstance.destroy(); 
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labelBulan.length > 0 ? labelBulan : ['Belum ada data'],
+                    datasets: [{ label: 'Omset (Rp)', data: dataOmset.length > 0 ? dataOmset : [0], backgroundColor: '#a38d58', borderRadius: 4 }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function renderTopAroma(dataAroma) {
+            const containerAroma = document.getElementById('daftar-aroma');
+            containerAroma.innerHTML = '';
+            const aromaSorted = Object.entries(dataAroma).sort((a, b) => b[1] - a[1]).slice(0, 20);               
+            if (aromaSorted.length === 0) {
+                containerAroma.innerHTML = '<p class="text-sm text-gray-500 italic">Belum ada data penjualan selesai.</p>';
+                return;
+            }
+            aromaSorted.forEach((item, index) => {
+                let peringkat = `<span class="font-bold text-gray-500">${index + 1}.</span>`;
+                if (index === 0) peringkat = '🥇'; else if (index === 1) peringkat = '🥈'; else if (index === 2) peringkat = '🥉';
+                containerAroma.innerHTML += `<div class="flex justify-between items-center border-b pb-2"><div class="flex items-center gap-2"><div class="w-6 text-center">${peringkat}</div><span class="font-medium text-sm text-gray-800">${item[0]}</span></div><span class="text-xs bg-gold text-white px-2 py-1 rounded-full">${item[1]} botol</span></div>`;
+            });
+        }
+
+        function renderBottomAroma(dataAroma) {
+            const containerAromaBawah = document.getElementById('daftar-aroma-bawah');
+            containerAromaBawah.innerHTML = '';
+            const aromaSortedBottom = Object.entries(dataAroma).sort((a, b) => a[1] - b[1]).slice(0, 20);               
+            if (aromaSortedBottom.length === 0) {
+                containerAromaBawah.innerHTML = '<p class="text-sm text-gray-500 italic">Belum ada data penjualan selesai.</p>';
+                return;
+            }
+            aromaSortedBottom.forEach((item, index) => {
+                let peringkat = index === 0 ? '🔻' : `<span class="font-bold text-gray-500">${index + 1}.</span>`;
+                containerAromaBawah.innerHTML += `<div class="flex justify-between items-center border-b pb-2"><div class="flex items-center gap-2"><div class="w-6 text-center">${peringkat}</div><span class="font-medium text-sm text-gray-800">${item[0]}</span></div><span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">${item[1]} botol</span></div>`;
+            });
+        }
+
+        function selesaikanPesanan(id) {
+            if(confirm("Apakah pesanan ini sudah selesai diproses?")) db.collection("pesanan").doc(id).update({ status: "Selesai" }).catch(e => alert(e));
+        }
+
+        function tolakPesanan(id) {
+            const alasan = prompt("Masukkan alasan menolak pesanan ini:");
+            if (alasan && alasan.trim() !== "") db.collection("pesanan").doc(id).update({ status: "Ditolak", alasan: alasan.trim() }).catch(e => alert(e));
+        }
+    </script>
+</body>
+</html>
