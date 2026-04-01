@@ -28,10 +28,17 @@
                     <label class="block text-sm font-medium mb-1 text-gray-700">Username</label>
                     <input type="text" id="input-user" required class="w-full border p-3 rounded-lg focus:ring-[#a38d58] outline-none" placeholder="Masukkan username">
                 </div>
+                
                 <div class="mb-6">
                     <label class="block text-sm font-medium mb-1 text-gray-700">Password</label>
-                    <input type="password" id="input-pass" required class="w-full border p-3 rounded-lg focus:ring-[#a38d58] outline-none" placeholder="Masukkan password">
+                    <div class="relative">
+                        <input type="password" id="input-pass" required class="w-full border p-3 rounded-lg focus:ring-[#a38d58] outline-none pr-12" placeholder="Masukkan password">
+                        <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-xl text-gray-500 hover:text-gray-700 focus:outline-none">
+                            <span id="eye-icon">👁️</span>
+                        </button>
+                    </div>
                 </div>
+
                 <button type="submit" class="w-full bg-gold text-white font-bold py-3 rounded-lg shadow hover:opacity-90 transition">
                     Masuk
                 </button>
@@ -93,7 +100,20 @@
         // 1. PENGATURAN USERNAME & PASSWORD ADMIN
         // ==========================================
         const USERNAME_ADMIN = "admin";
-        const PASSWORD_ADMIN = "12345678";
+        const PASSWORD_ADMIN = "miperfume123";
+
+        // Fitur Tampilkan/Sembunyikan Password
+        function togglePassword() {
+            const passInput = document.getElementById('input-pass');
+            const eyeIcon = document.getElementById('eye-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.innerText = '🙈'; // Ubah ikon saat password terlihat
+            } else {
+                passInput.type = 'password';
+                eyeIcon.innerText = '👁️'; // Ubah ikon kembali
+            }
+        }
 
         if (sessionStorage.getItem("admin_logged_in") === "true") {
             document.getElementById('login-screen').classList.add('hidden');
@@ -102,15 +122,18 @@
 
         function prosesLogin(event) {
             event.preventDefault();
-            const user = document.getElementById('input-user').value;
-            const pass = document.getElementById('input-pass').value;
+            
+            // Perbaikan: .toLowerCase() agar tidak sensitif huruf besar/kecil (Admin vs admin)
+            // Perbaikan: .trim() untuk membuang spasi yang tidak sengaja terketik di awal/akhir
+            const user = document.getElementById('input-user').value.toLowerCase().trim();
+            const pass = document.getElementById('input-pass').value.trim();
 
             if (user === USERNAME_ADMIN && pass === PASSWORD_ADMIN) {
                 sessionStorage.setItem("admin_logged_in", "true");
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
             } else {
-                alert("❌ Username atau Password salah!");
+                alert("❌ Username atau Password salah! Cek kembali ketikan Anda.");
             }
         }
 
@@ -118,6 +141,10 @@
             if(confirm("Yakin ingin keluar dari halaman admin?")) {
                 sessionStorage.removeItem("admin_logged_in");
                 document.getElementById('form-login').reset();
+                // Kembalikan tipe input ke password jika tadi sempat di-show
+                document.getElementById('input-pass').type = 'password';
+                document.getElementById('eye-icon').innerText = '👁️';
+
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('admin-content').classList.add('hidden');
             }
@@ -202,64 +229,3 @@
                 }
 
                 const card = document.createElement('div');
-                card.className = "bg-white p-4 rounded-xl shadow border-l-4 border-[#a38d58]";
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-bold text-lg">${data.nama}</h3>
-                        <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${data.status}</span>
-                    </div>
-                    <p class="text-sm text-gray-600"><span class="font-bold">Aroma:</span> ${data.aroma}</p>
-                    <p class="text-sm text-gray-600"><span class="font-bold">Detail:</span> ${data.kelas} - ${data.ukuran}ml</p>
-                    <p class="text-lg font-bold text-[#a38d58] mt-2">Rp ${data.total.toLocaleString('id-ID')}</p>
-                    ${alasanPenolakan}
-                    ${actionButtons}
-                `;
-                containerPesanan.appendChild(card);
-
-                // Proses Data Dashboard
-                if (data.status === "Selesai") {
-                    const waktuTanggal = data.waktu ? data.waktu.toDate() : new Date();
-                    const bulanTransaksi = waktuTanggal.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
-
-                    if (bulanTransaksi === bulanSekarang) {
-                        totalOmsetBulanIni += data.total;
-                        totalQtyBulanIni += 1;
-                    }
-
-                    if (!rekapBulanan[bulanTransaksi]) rekapBulanan[bulanTransaksi] = 0;
-                    rekapBulanan[bulanTransaksi] += data.total;
-
-                    const namaAroma = data.aroma.trim().toUpperCase();
-                    if (!rekapAroma[namaAroma]) rekapAroma[namaAroma] = 0;
-                    rekapAroma[namaAroma] += 1; 
-                }
-            });
-
-            document.getElementById('dash-omset').innerText = 'Rp ' + totalOmsetBulanIni.toLocaleString('id-ID');
-            document.getElementById('dash-qty').innerText = totalQtyBulanIni;
-
-            renderGrafik(rekapBulanan);
-            renderTopAroma(rekapAroma);
-            renderBottomAroma(rekapAroma); // Panggil fungsi render bawah
-        });
-
-        // --- Fungsi Grafik & Top Aroma ---
-        function renderGrafik(dataBulanan) {
-            const ctx = document.getElementById('grafikOmset').getContext('2d');
-            const labelBulan = Object.keys(dataBulanan).reverse();
-            const dataOmset = Object.values(dataBulanan).reverse();
-
-            if (chartInstance) chartInstance.destroy(); 
-
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labelBulan.length > 0 ? labelBulan : ['Belum ada data'],
-                    datasets: [{
-                        label: 'Omset (Rp)',
-                        data: dataOmset.length > 0 ? dataOmset : [0],
-                        backgroundColor: '#a38d58',
-                        borderRadius: 4
-                    }]
-                },
-                options: { responsive: true, scales: { y: {
