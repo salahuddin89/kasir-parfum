@@ -67,6 +67,31 @@
                 <button id="btn-submit" type="submit" class="w-full bg-gold text-white font-bold py-3 rounded shadow hover:opacity-90">
                     Kirim Pesanan Sekarang
                 </button>
+                <button onclick="testKoneksi(event)" class="mt-4 w-full bg-red-600 text-white font-bold py-3 rounded shadow">
+    🔌 TEST KONEKSI DATABASE
+</button>
+
+<script>
+    // Pastikan kode firebaseConfig Anda ada di atas ini
+    // ...
+
+    // Fungsi Test Koneksi
+    function testKoneksi(event) {
+        event.preventDefault(); // Mencegah form reload
+        alert("Mencoba mengirim data test ke server...");
+        
+        db.collection("test_sistem").add({
+            pesan: "Halo Admin! Koneksi aplikasi sukses!",
+            waktu: new Date()
+        })
+        .then(() => {
+            alert("✅ SUKSES! Aplikasi sudah terhubung dengan Firestore!");
+        })
+        .catch((error) => {
+            alert("❌ GAGAL! Ada masalah koneksi: " + error.message);
+        });
+    }
+</script>
             </form>
         </div>
     </div>
