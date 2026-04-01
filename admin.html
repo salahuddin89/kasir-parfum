@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - MI Perfume</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 pb-20">
+
+    <header class="bg-gray-800 text-white p-4 shadow-sm sticky top-0 z-10 flex justify-between items-center">
+        <h1 class="text-lg font-bold text-[#a38d58]">MI Perfume - Dashboard Admin</h1>
+        <span class="text-xs bg-green-500 px-2 py-1 rounded-full animate-pulse">Online</span>
+    </header>
+
+    <div class="p-4 max-w-md mx-auto">
+        <h2 class="text-xl font-bold mb-4">Pesanan Masuk (Real-time)</h2>
+        <div id="daftar-pesanan" class="space-y-4">
+            <p class="text-center text-gray-500 italic mt-10">Memuat data dari server...</p>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+  apiKey: "AIzaSyDlrX84TqRgJS902PdjH8awCQacO6hzStY",
+  authDomain: "mi-perfume-1989.firebaseapp.com",
+  databaseURL: "https://mi-perfume-1989-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mi-perfume-1989",
+  storageBucket: "mi-perfume-1989.firebasestorage.app",
+  messagingSenderId: "894897183896",
+  appId: "1:894897183896:web:71372dc8cbb9056c7144ed",
+  measurementId: "G-H2KG1X9KVN"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+        // Mengambil data pesanan secara real-time dari terbaru ke terlama
+        db.collection("pesanan").orderBy("waktu", "desc").onSnapshot((snapshot) => {
+            const container = document.getElementById('daftar-pesanan');
+            container.innerHTML = ''; // Bersihkan layar
+
+            if (snapshot.empty) {
+                container.innerHTML = '<p class="text-center text-gray-500 italic">Belum ada pesanan masuk.</p>';
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const id = doc.id; // ID unik pesanan
+
+                // Warna badge status
+                const statusColor = data.status === "Selesai" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700";
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl shadow border-l-4 border-[#a38d58]";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-lg">${data.nama}</h3>
+                        <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}">${data.status}</span>
+                    </div>
+                    <p class="text-sm text-gray-600"><span class="font-bold">Aroma:</span> ${data.aroma}</p>
+                    <p class="text-sm text-gray-600"><span class="font-bold">Detail:</span> ${data.kelas} - ${data.ukuran}ml</p>
+                    <p class="text-lg font-bold text-[#a38d58] mt-2 border-t pt-2">Rp ${data.total.toLocaleString('id-ID')}</p>
+                    
+                    ${data.status !== "Selesai" ? 
+                    `<button onclick="selesaikanPesanan('${id}')" class="mt-3 w-full bg-gray-800 text-white text-sm py-2 rounded shadow hover:bg-gray-700 transition">
+                        Tandai Selesai
+                    </button>` : ''}
+                `;
+                container.appendChild(card);
+            });
+        });
+
+        // Fungsi untuk mengupdate status pesanan di database
+        function selesaikanPesanan(id) {
+            if(confirm("Apakah pesanan ini sudah selesai diproses?")) {
+                db.collection("pesanan").doc(id).update({
+                    status: "Selesai"
+                }).then(() => {
+                    console.log("Status berhasil diperbarui!");
+                }).catch((error) => {
+                    alert("Error mengupdate data: " + error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
