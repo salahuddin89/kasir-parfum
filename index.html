@@ -32,7 +32,12 @@
             <form id="form-kasir" onsubmit="simpanTransaksi(event)">
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Pembeli</label>
-                    <input type="text" id="nama" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Masukkan nama">
+                    <input type="text" id="nama" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Masukkan nama pelanggan">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aroma</label>
+                    <input type="text" id="aroma" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Misal: Bvlgari Aqua, Vanilla...">
                 </div>
 
                 <div class="mb-4">
@@ -90,7 +95,6 @@
     </div>
 
     <script>
-        // Harga per kelas
         const hargaPerMl = {
             "Standar": 1000,
             "Premium": 2000,
@@ -100,12 +104,10 @@
 
         let chartInstance = null;
 
-        // Fungsi Format Rupiah
         const formatRupiah = (angka) => {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
         };
 
-        // Navigasi Tab
         function switchTab(tabId) {
             document.getElementById('page-kasir').classList.add('hidden');
             document.getElementById('page-laporan').classList.add('hidden');
@@ -124,7 +126,6 @@
             }
         }
 
-        // Kalkulasi Total Harga secara Real-time
         function hitungTotal() {
             const kelas = document.getElementById('kelas').value;
             const ukuranEl = document.querySelector('input[name="ukuran"]:checked');
@@ -138,102 +139,21 @@
             return 0;
         }
 
-        // Simpan Data ke LocalStorage
         function simpanTransaksi(event) {
-            event.preventDefault(); // Mencegah halaman reload
+            event.preventDefault();
 
             const nama = document.getElementById('nama').value;
+            const aroma = document.getElementById('aroma').value; // Mengambil data aroma
             const kelas = document.getElementById('kelas').value;
             const ukuran = document.querySelector('input[name="ukuran"]:checked').value;
             const total = hitungTotal();
-            const tanggal = new Date().toISOString(); // Simpan tanggal & waktu saat ini
+            const tanggal = new Date().toISOString();
 
-            const transaksiBaru = { id: Date.now(), nama, kelas, ukuran, total, tanggal };
+            // Memasukkan aroma ke dalam objek transaksi
+            const transaksiBaru = { id: Date.now(), nama, aroma, kelas, ukuran, total, tanggal };
 
-            // Ambil data lama dari localStorage
             let dataPenjualan = JSON.parse(localStorage.getItem('parfum_db')) || [];
             dataPenjualan.push(transaksiBaru);
-
-            // Simpan kembali
             localStorage.setItem('parfum_db', JSON.stringify(dataPenjualan));
 
-            // Reset Form & Notifikasi
-            alert(`Transaksi berhasil disimpan!\nNama: ${nama}\nTotal: ${formatRupiah(total)}`);
-            document.getElementById('form-kasir').reset();
-            document.getElementById('total-harga').innerText = 'Rp 0';
-        }
-
-        // Render Laporan dan Grafik
-        function renderLaporan() {
-            const dataPenjualan = JSON.parse(localStorage.getItem('parfum_db')) || [];
-            const containerRiwayat = document.getElementById('daftar-transaksi');
-            containerRiwayat.innerHTML = '';
-
-            if (dataPenjualan.length === 0) {
-                containerRiwayat.innerHTML = '<p class="text-sm text-gray-500 italic">Belum ada transaksi.</p>';
-            }
-
-            // Object untuk mengelompokkan data grafik (Bulan-Tahun => Total Rupiah)
-            const dataGrafik = {};
-
-            // Render daftar dari yang terbaru ke terlama
-            dataPenjualan.slice().reverse().forEach(trx => {
-                const dateObj = new Date(trx.tanggal);
-                const tanggalFormat = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const bulanTahun = dateObj.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
-
-                // Agregasi untuk grafik
-                if (!dataGrafik[bulanTahun]) dataGrafik[bulanTahun] = 0;
-                dataGrafik[bulanTahun] += trx.total;
-
-                // Elemen HTML riwayat
-                const item = document.createElement('div');
-                item.className = 'border-b pb-2 flex justify-between items-start';
-                item.innerHTML = `
-                    <div>
-                        <p class="font-bold text-sm">${trx.nama}</p>
-                        <p class="text-xs text-gray-500">${trx.kelas} - ${trx.ukuran}ml | ${tanggalFormat}</p>
-                    </div>
-                    <div class="font-bold text-green-600 text-sm">
-                        ${formatRupiah(trx.total)}
-                    </div>
-                `;
-                containerRiwayat.appendChild(item);
-            });
-
-            renderGrafik(dataGrafik);
-        }
-
-        // Menggambar Grafik dengan Chart.js
-        function renderGrafik(dataGrafik) {
-            const ctx = document.getElementById('grafikPenjualan').getContext('2d');
-            
-            const labelBulan = Object.keys(dataGrafik).reverse();
-            const dataPendapatan = Object.values(dataGrafik).reverse();
-
-            if (chartInstance) {
-                chartInstance.destroy(); // Hapus grafik lama sebelum menggambar ulang
-            }
-
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labelBulan.length > 0 ? labelBulan : ['Belum ada data'],
-                    datasets: [{
-                        label: 'Total Pendapatan (Rp)',
-                        data: dataPendapatan.length > 0 ? dataPendapatan : [0],
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+            alert(`Transaksi berhasil!\nNama: ${nama}\nAroma: ${aroma}\nTotal: ${formatRup
