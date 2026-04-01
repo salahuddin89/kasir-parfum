@@ -3,14 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="MI Perfume">
     <title>Pesan - MI Perfume</title>
-    
-    <link rel="apple-touch-icon" href="logo.jpeg">
-    <link rel="icon" type="image/jpeg" href="logo.jpeg">
-
+    <link rel="apple-touch-icon" href="logo.jpg">
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
@@ -34,19 +29,22 @@
     </div>
 
     <div id="page-pesan" class="p-4 max-w-md mx-auto">
-        <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-[#a38d58]">
-            <form id="form-pesan" onsubmit="kirimPesanan(event)">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Nama Anda</label>
-                    <input type="text" id="nama" required class="w-full border p-2 rounded focus:ring-[#a38d58] outline-none" placeholder="Masukkan nama">
+        
+        <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-[#a38d58] mb-4">
+            <label class="block text-sm font-bold mb-1 text-gray-700">Nama Pemesan</label>
+            <input type="text" id="nama" required class="w-full border p-2 rounded-lg focus:ring-[#a38d58] outline-none" placeholder="Masukkan nama Anda">
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-md mb-4 border border-gray-200">
+            <h2 class="font-bold text-gray-700 mb-3 border-b pb-2">➕ Tambah Parfum</h2>
+            <form id="form-item" onsubmit="tambahKeKeranjang(event)">
+                <div class="mb-3">
+                    <label class="block text-xs font-medium mb-1 text-gray-600">Aroma Parfum</label>
+                    <input type="text" id="aroma" required class="w-full border p-2 rounded focus:ring-[#a38d58] outline-none text-sm" placeholder="Misal: Bvlgari Aqua, Vanilla...">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Aroma Parfum</label>
-                    <input type="text" id="aroma" required class="w-full border p-2 rounded focus:ring-[#a38d58] outline-none" placeholder="Misal: Bvlgari Aqua, Vanilla...">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Kelas Parfum</label>
-                    <select id="kelas" required onchange="hitungTotal()" class="w-full border p-2 rounded focus:ring-[#a38d58] outline-none">
+                <div class="mb-3">
+                    <label class="block text-xs font-medium mb-1 text-gray-600">Kelas Parfum</label>
+                    <select id="kelas" required onchange="hitungSubTotal()" class="w-full border p-2 rounded focus:ring-[#a38d58] outline-none text-sm">
                         <option value="" disabled selected>Pilih Kelas...</option>
                         <option value="Standar">Standar (Rp 1.000/ml)</option>
                         <option value="Premium">Premium (Rp 2.000/ml)</option>
@@ -54,60 +52,72 @@
                         <option value="Diamond">Diamond (Rp 4.000/ml)</option>
                     </select>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Ukuran Botol</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <label class="border rounded p-2 text-center cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="ukuran" value="35" required onchange="hitungTotal()" class="hidden peer">
-                            <span class="peer-checked:font-bold peer-checked:text-gold">35 ml</span>
-                        </label>
-                        <label class="border rounded p-2 text-center cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="ukuran" value="50" onchange="hitungTotal()" class="hidden peer">
-                            <span class="peer-checked:font-bold peer-checked:text-gold">50 ml</span>
-                        </label>
-                        <label class="border rounded p-2 text-center cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="ukuran" value="100" onchange="hitungTotal()" class="hidden peer">
-                            <span class="peer-checked:font-bold peer-checked:text-gold">100 ml</span>
-                        </label>
+                
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-600">Ukuran</label>
+                        <select id="ukuran" required onchange="hitungSubTotal()" class="w-full border p-2 rounded focus:ring-[#a38d58] outline-none text-sm">
+                            <option value="" disabled selected>Pilih...</option>
+                            <option value="35">35 ml</option>
+                            <option value="50">50 ml</option>
+                            <option value="100">100 ml</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1 text-gray-600">Jumlah (Qty)</label>
+                        <input type="number" id="qty" required min="1" value="1" oninput="hitungSubTotal()" class="w-full border p-2 rounded focus:ring-[#a38d58] outline-none text-sm text-center">
                     </div>
                 </div>
 
-                <div class="mb-6 bg-gold-light p-4 rounded border border-[#e8dfc8]">
-                    <span class="block text-sm">Total Harga:</span>
-                    <span id="total-harga" class="text-2xl font-bold text-gold">Rp 0</span>
+                <div class="flex justify-between items-center bg-gray-50 p-2 rounded mb-3 border">
+                    <span class="text-xs text-gray-500">Subtotal Item:</span>
+                    <span id="subtotal-item" class="font-bold text-gold">Rp 0</span>
                 </div>
 
-                <button id="btn-submit" type="submit" class="w-full bg-gold text-white font-bold py-3 rounded shadow hover:opacity-90 active:scale-95 transition">
-                    Kirim Pesanan Sekarang
+                <button type="submit" class="w-full bg-gray-800 text-white text-sm font-bold py-2 rounded shadow hover:bg-gray-700 active:scale-95 transition">
+                    Masukkan Keranjang
                 </button>
             </form>
+        </div>
+
+        <div class="bg-gold-light p-4 rounded-xl shadow-md border border-[#e8dfc8]">
+            <h2 class="font-bold text-[#a38d58] mb-3 flex justify-between">
+                <span>🛒 Keranjang Belanja</span>
+                <span id="badge-qty" class="bg-[#a38d58] text-white px-2 py-0.5 rounded-full text-xs">0</span>
+            </h2>
+            
+            <div id="isi-keranjang" class="space-y-2 mb-4 max-h-40 overflow-y-auto">
+                <p class="text-xs text-gray-400 italic text-center py-2">Keranjang masih kosong</p>
+            </div>
+
+            <div class="flex justify-between items-end border-t border-[#e8dfc8] pt-3 mb-4">
+                <span class="text-sm font-bold text-gray-700">Total Pembayaran:</span>
+                <span id="grand-total" class="text-xl font-bold text-gold">Rp 0</span>
+            </div>
+
+            <button id="btn-submit" onclick="kirimPesananAkhir()" class="w-full bg-gold text-white font-bold py-3 rounded-lg shadow hover:opacity-90 active:scale-95 transition disabled:opacity-50" disabled>
+                Kirim Pesanan Sekarang
+            </button>
         </div>
     </div>
 
     <div id="page-riwayat" class="p-4 max-w-md mx-auto hidden">
         <div class="bg-white p-4 rounded-xl shadow-md border-t-4 border-[#a38d58]">
             <h2 class="text-lg font-bold mb-4 border-b pb-2 text-gray-700">Status Pesanan Anda</h2>
-            <div id="daftar-riwayat" class="space-y-4">
-                <p class="text-center text-gray-500 italic mt-4">Memuat data riwayat...</p>
-            </div>
+            <div id="daftar-riwayat" class="space-y-4"></div>
         </div>
     </div>
 
 
     <script>
-        // ==========================================
-        // 1. SISTEM ID PENGGUNA (DEVICE ID)
-        // ==========================================
-        // Mengecek apakah HP ini sudah punya ID. Jika belum, buatkan ID acak baru.
+        // 1. SISTEM ID PENGGUNA
         let buyerId = localStorage.getItem('mi_buyer_id');
         if (!buyerId) {
             buyerId = 'buyer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             localStorage.setItem('mi_buyer_id', buyerId);
         }
 
-        // ==========================================
-        // 2. KONFIGURASI FIREBASE ANDA
-        // ==========================================
+        // 2. FIREBASE CONFIG (MASUKKAN KODE ANDA DI SINI)
         const firebaseConfig = {
   apiKey: "AIzaSyDlrX84TqRgJS902PdjH8awCQacO6hzStY",
   authDomain: "mi-perfume-1989.firebaseapp.com",
@@ -118,11 +128,13 @@
   appId: "1:894897183896:web:71372dc8cbb9056c7144ed",
   measurementId: "G-H2KG1X9KVN"
 };
-        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- Logika Ganti Tab ---
+        // 3. LOGIKA KERANJANG BELANJA
+        let keranjang = [];
+        const hargaPerMl = { "Standar": 1000, "Premium": 2000, "Super Premium": 3000, "Diamond": 4000 };
+
         function switchTab(tabId) {
             document.getElementById('page-pesan').classList.add('hidden');
             document.getElementById('page-riwayat').classList.add('hidden');
@@ -138,33 +150,104 @@
             }
         }
 
-        const hargaPerMl = { "Standar": 1000, "Premium": 2000, "Super Premium": 3000, "Diamond": 4000 };
-
-        function hitungTotal() {
+        function hitungSubTotal() {
             const kelas = document.getElementById('kelas').value;
-            const ukuranEl = document.querySelector('input[name="ukuran"]:checked');
-            if (kelas && ukuranEl) {
-                const total = hargaPerMl[kelas] * parseInt(ukuranEl.value);
-                document.getElementById('total-harga').innerText = 'Rp ' + total.toLocaleString('id-ID');
-                return total;
+            const ukuran = document.getElementById('ukuran').value;
+            const qty = document.getElementById('qty').value;
+            
+            if (kelas && ukuran && qty) {
+                const subtotal = hargaPerMl[kelas] * parseInt(ukuran) * parseInt(qty);
+                document.getElementById('subtotal-item').innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
+                return subtotal;
             }
+            document.getElementById('subtotal-item').innerText = 'Rp 0';
             return 0;
         }
 
-        // --- Mengirim Pesanan Baru ---
-        function kirimPesanan(event) {
+        function tambahKeKeranjang(event) {
             event.preventDefault();
+            
+            const item = {
+                aroma: document.getElementById('aroma').value,
+                kelas: document.getElementById('kelas').value,
+                ukuran: document.getElementById('ukuran').value,
+                qty: parseInt(document.getElementById('qty').value),
+                subtotal: hitungSubTotal()
+            };
+
+            keranjang.push(item);
+            renderKeranjang();
+            
+            // Reset form item (kecuali nama pembeli)
+            document.getElementById('form-item').reset();
+            document.getElementById('qty').value = 1;
+            document.getElementById('subtotal-item').innerText = 'Rp 0';
+        }
+
+        function hapusItem(index) {
+            keranjang.splice(index, 1);
+            renderKeranjang();
+        }
+
+        function renderKeranjang() {
+            const wadah = document.getElementById('isi-keranjang');
+            const grandTotalEl = document.getElementById('grand-total');
+            const badgeQty = document.getElementById('badge-qty');
+            const btnSubmit = document.getElementById('btn-submit');
+            
+            wadah.innerHTML = '';
+            let grandTotal = 0;
+            let totalQty = 0;
+
+            if (keranjang.length === 0) {
+                wadah.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-2">Keranjang masih kosong</p>';
+                btnSubmit.disabled = true;
+            } else {
+                btnSubmit.disabled = false;
+                keranjang.forEach((item, index) => {
+                    grandTotal += item.subtotal;
+                    totalQty += item.qty;
+
+                    wadah.innerHTML += `
+                        <div class="bg-white p-2 rounded border flex justify-between items-center">
+                            <div>
+                                <p class="text-sm font-bold">${item.aroma} <span class="text-[#a38d58]">x${item.qty}</span></p>
+                                <p class="text-xs text-gray-500">${item.kelas} - ${item.ukuran}ml</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <p class="text-xs font-bold text-gray-700">Rp ${item.subtotal.toLocaleString('id-ID')}</p>
+                                <button onclick="hapusItem(${index})" class="text-red-500 hover:text-red-700">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            grandTotalEl.innerText = 'Rp ' + grandTotal.toLocaleString('id-ID');
+            badgeQty.innerText = totalQty;
+        }
+
+        // --- Mengirim Data Keranjang ke Server ---
+        function kirimPesananAkhir() {
+            const nama = document.getElementById('nama').value.trim();
+            if (!nama) {
+                alert("Harap masukkan Nama Pemesan terlebih dahulu!");
+                document.getElementById('nama').focus();
+                return;
+            }
+
             const btn = document.getElementById('btn-submit');
             btn.innerText = "Mengirim...";
             btn.disabled = true;
 
+            // Hitung grand total ulang untuk keamanan
+            const grandTotal = keranjang.reduce((sum, item) => sum + item.subtotal, 0);
+
             const pesananBaru = {
-                buyer_id: buyerId, // <-- Menyematkan Kunci Identitas ke Pesanan
-                nama: document.getElementById('nama').value,
-                aroma: document.getElementById('aroma').value,
-                kelas: document.getElementById('kelas').value,
-                ukuran: document.querySelector('input[name="ukuran"]:checked').value,
-                total: hitungTotal(),
+                buyer_id: buyerId,
+                nama: nama,
+                items: keranjang, // <-- Mengirim Array Keranjang
+                total: grandTotal,
                 status: "Menunggu Diproses",
                 waktu: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -172,12 +255,10 @@
             db.collection("pesanan").add(pesananBaru)
             .then(() => {
                 alert("Pesanan berhasil dikirim!");
-                document.getElementById('form-pesan').reset();
-                document.getElementById('total-harga').innerText = 'Rp 0';
+                keranjang = []; // Kosongkan keranjang
+                renderKeranjang();
+                document.getElementById('nama').value = ''; // Kosongkan nama
                 btn.innerText = "Kirim Pesanan Sekarang";
-                btn.disabled = false;
-                
-                // Otomatis pindah ke Tab Riwayat setelah pesan
                 switchTab('riwayat');
             })
             .catch((error) => {
@@ -187,77 +268,52 @@
             });
         }
 
-        // --- Memuat Riwayat Pesanan Real-time ---
-        // Hanya mengambil pesanan yang cocok dengan Kunci Identitas (buyerId) HP ini
-        db.collection("pesanan").where("buyer_id", "==", buyerId)
-        .onSnapshot((snapshot) => {
+        // --- Render Riwayat (Mendukung Multi-item) ---
+        db.collection("pesanan").where("buyer_id", "==", buyerId).onSnapshot((snapshot) => {
             const container = document.getElementById('daftar-riwayat');
             container.innerHTML = '';
-
             if (snapshot.empty) {
                 container.innerHTML = '<div class="text-center py-6"><p class="text-4xl mb-2">🛍️</p><p class="text-sm text-gray-500 italic">Belum ada riwayat pesanan.</p></div>';
                 return;
             }
 
-            // Memasukkan data ke array untuk diurutkan dari yang terbaru
             let riwayatData = [];
-            snapshot.forEach(doc => {
-                riwayatData.push({ id: doc.id, ...doc.data() });
-            });
-            
-            // Urutkan berdasarkan waktu (terbaru di atas)
-            riwayatData.sort((a, b) => {
-                const timeA = a.waktu ? a.waktu.toMillis() : Date.now();
-                const timeB = b.waktu ? b.waktu.toMillis() : Date.now();
-                return timeB - timeA;
-            });
+            snapshot.forEach(doc => riwayatData.push({ id: doc.id, ...doc.data() }));
+            riwayatData.sort((a, b) => (b.waktu ? b.waktu.toMillis() : Date.now()) - (a.waktu ? a.waktu.toMillis() : Date.now()));
 
             riwayatData.forEach(data => {
-                // Menentukan warna dan tampilan status
                 let statusColor = "bg-yellow-100 text-yellow-700 border-yellow-200";
                 let statusIcon = "⏳";
-                
-                if (data.status === "Selesai") {
-                    statusColor = "bg-green-100 text-green-700 border-green-200";
-                    statusIcon = "✅";
-                } else if (data.status === "Ditolak") {
-                    statusColor = "bg-red-100 text-red-700 border-red-200";
-                    statusIcon = "❌";
+                if (data.status === "Selesai") { statusColor = "bg-green-100 text-green-700 border-green-200"; statusIcon = "✅"; }
+                else if (data.status === "Ditolak") { statusColor = "bg-red-100 text-red-700 border-red-200"; statusIcon = "❌"; }
+
+                let alasanTampil = data.status === "Ditolak" && data.alasan ? `<p class="mt-2 text-xs text-red-600 font-medium bg-red-50 p-2 rounded">Alasan: ${data.alasan}</p>` : '';
+                let tanggalTampil = data.waktu ? data.waktu.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
+
+                // Format Rincian Item (Mendukung data baru array dan data lama)
+                let rincianItem = '';
+                if (data.items) {
+                    rincianItem = data.items.map(item => `<p class="text-xs text-gray-600"><span class="font-bold text-gray-800">${item.qty}x</span> ${item.aroma} (${item.kelas} ${item.ukuran}ml)</p>`).join('');
+                } else {
+                    rincianItem = `<p class="text-xs text-gray-600"><span class="font-bold text-gray-800">1x</span> ${data.aroma} (${data.kelas} ${data.ukuran}ml)</p>`;
                 }
 
-                // Jika pesanan ditolak, tampilkan alasannya ke pelanggan
-                let alasanTampil = '';
-                if (data.status === "Ditolak" && data.alasan) {
-                    alasanTampil = `<p class="mt-2 text-xs text-red-600 font-medium bg-red-50 p-2 rounded">Alasan: ${data.alasan}</p>`;
-                }
-
-                // Format Tanggal (Jika ada)
-                let tanggalTampil = 'Baru saja';
-                if (data.waktu) {
-                    tanggalTampil = data.waktu.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                }
-
-                const card = document.createElement('div');
-                card.className = "border rounded-lg p-3 mb-3 bg-gray-50";
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-2 border-b pb-2">
-                        <div>
-                            <p class="font-bold text-gray-800 text-sm">${data.aroma}</p>
-                            <p class="text-xs text-gray-500">${tanggalTampil}</p>
+                container.innerHTML += `
+                    <div class="border rounded-lg p-3 mb-3 bg-gray-50">
+                        <div class="flex justify-between items-start mb-2 border-b pb-2">
+                            <div>
+                                <p class="font-bold text-gray-800 text-sm">Pesanan Saya</p>
+                                <p class="text-xs text-gray-500">${tanggalTampil}</p>
+                            </div>
+                            <span class="text-xs font-bold px-2 py-1 rounded border flex items-center gap-1 ${statusColor}">${statusIcon} ${data.status}</span>
                         </div>
-                        <span class="text-xs font-bold px-2 py-1 rounded border flex items-center gap-1 ${statusColor}">
-                            ${statusIcon} ${data.status}
-                        </span>
-                    </div>
-                    <div class="flex justify-between items-end mt-2">
-                        <div>
-                            <p class="text-xs text-gray-600">${data.kelas} - ${data.ukuran}ml</p>
+                        <div class="mb-2 space-y-1">${rincianItem}</div>
+                        <div class="flex justify-between items-end border-t pt-2">
+                            <span class="text-xs text-gray-500">Total Harga:</span>
+                            <p class="text-sm font-bold text-[#a38d58]">Rp ${data.total.toLocaleString('id-ID')}</p>
                         </div>
-                        <p class="text-sm font-bold text-[#a38d58]">Rp ${data.total.toLocaleString('id-ID')}</p>
-                    </div>
-                    ${alasanTampil}
-                `;
-                container.appendChild(card);
+                        ${alasanTampil}
+                    </div>`;
             });
         });
     </script>
