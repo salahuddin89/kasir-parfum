@@ -75,9 +75,15 @@
                 <canvas id="grafikOmset" width="400" height="250"></canvas>
             </div>
 
-            <div class="bg-white p-4 rounded-xl shadow border-t-4 border-[#a38d58]">
-                <h2 class="text-sm font-bold mb-3 text-gray-700">Top 20 Aroma Terlaris</h2>
+            <div class="bg-white p-4 rounded-xl shadow mb-6 border-t-4 border-[#a38d58]">
+                <h2 class="text-sm font-bold mb-3 text-gray-700">Top 20 Aroma Terlaris 🚀</h2>
                 <div id="daftar-aroma" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow mb-6 border-t-4 border-red-400">
+                <h2 class="text-sm font-bold mb-3 text-red-600">20 Aroma Kurang Laris 🔻</h2>
+                <p class="text-xs text-gray-500 mb-3 border-b pb-2">Aroma dengan penjualan paling sedikit (Underperforming).</p>
+                <div id="daftar-aroma-bawah" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
             </div>
         </div>
     </div>
@@ -89,23 +95,18 @@
         const USERNAME_ADMIN = "admin";
         const PASSWORD_ADMIN = "miperfume123";
 
-        // Cek apakah admin sudah login sebelumnya di tab ini
         if (sessionStorage.getItem("admin_logged_in") === "true") {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('admin-content').classList.remove('hidden');
         }
 
-        // Fungsi Proses Login
         function prosesLogin(event) {
             event.preventDefault();
             const user = document.getElementById('input-user').value;
             const pass = document.getElementById('input-pass').value;
 
             if (user === USERNAME_ADMIN && pass === PASSWORD_ADMIN) {
-                // Simpan sesi login
                 sessionStorage.setItem("admin_logged_in", "true");
-                
-                // Sembunyikan form login, tampilkan konten admin
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
             } else {
@@ -113,7 +114,6 @@
             }
         }
 
-        // Fungsi Logout
         function logoutAdmin() {
             if(confirm("Yakin ingin keluar dari halaman admin?")) {
                 sessionStorage.removeItem("admin_logged_in");
@@ -240,6 +240,7 @@
 
             renderGrafik(rekapBulanan);
             renderTopAroma(rekapAroma);
+            renderBottomAroma(rekapAroma); // Panggil fungsi render bawah
         });
 
         // --- Fungsi Grafik & Top Aroma ---
@@ -261,59 +262,4 @@
                         borderRadius: 4
                     }]
                 },
-                options: { responsive: true, scales: { y: { beginAtZero: true } } }
-            });
-        }
-
-        function renderTopAroma(dataAroma) {
-            const containerAroma = document.getElementById('daftar-aroma');
-            containerAroma.innerHTML = '';
-
-            const aromaSorted = Object.entries(dataAroma)
-                .sort((a, b) => b[1] - a[1]) 
-                .slice(0, 20);               
-
-            if (aromaSorted.length === 0) {
-                containerAroma.innerHTML = '<p class="text-sm text-gray-500 italic">Belum ada data penjualan selesai.</p>';
-                return;
-            }
-
-            aromaSorted.forEach((item, index) => {
-                const nama = item[0];
-                const jumlah = item[1];
-                let peringkat = `<span class="font-bold text-gray-500">${index + 1}.</span>`;
-                if (index === 0) peringkat = '🥇';
-                if (index === 1) peringkat = '🥈';
-                if (index === 2) peringkat = '🥉';
-
-                const div = document.createElement('div');
-                div.className = 'flex justify-between items-center border-b pb-2';
-                div.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <div class="w-6 text-center">${peringkat}</div>
-                        <span class="font-medium text-sm text-gray-800">${nama}</span>
-                    </div>
-                    <span class="text-xs bg-gold text-white px-2 py-1 rounded-full">${jumlah} botol</span>
-                `;
-                containerAroma.appendChild(div);
-            });
-        }
-
-        // --- Aksi Pesanan ---
-        function selesaikanPesanan(id) {
-            if(confirm("Apakah pesanan ini sudah selesai diproses?")) {
-                db.collection("pesanan").doc(id).update({ status: "Selesai" })
-                .catch((error) => alert("Error: " + error));
-            }
-        }
-
-        function tolakPesanan(id) {
-            const alasan = prompt("Masukkan alasan menolak pesanan ini:");
-            if (alasan !== null && alasan.trim() !== "") {
-                db.collection("pesanan").doc(id).update({ status: "Ditolak", alasan: alasan.trim() })
-                .catch((error) => alert("Error: " + error));
-            }
-        }
-    </script>
-</body>
-</html>
+                options: { responsive: true, scales: { y: {
